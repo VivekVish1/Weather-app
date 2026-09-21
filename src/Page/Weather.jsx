@@ -1,16 +1,33 @@
-import React from 'react'
 import '../Styles/weather.css'
 import { useState, useEffect } from 'react'
 import SearchBar from '../component/searchBar'
-import WeatherCard, { getWeatherText } from '../component/weatherCard'
+import WeatherCard from '../component/weatherCard'
 import { getWeather } from '../service/weatherApi'
+import { getWeatherText } from '../service/weatherText'
 
 const DEFAULT_CITY = "KOLKATA"
 
+function getGreeting() {
+    const hour = new Date().getHours()
+
+    if (hour >= 5 && hour < 12) return <>Good Morning <i className="fa-regular fa-sun"></i></>
+    if (hour >= 12 && hour < 16) return <>Good Afternoon <i className="fa-solid fa-sun"></i></>
+    if (hour >= 16 && hour < 21) return <>Good Evening <i className="fa-solid fa-cloud-sun"></i></>
+    return <>Good Night <i className="fa-solid fa-moon"></i></>
+}
+
+function getCurrentTime() {
+    return new Date().toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    })
+}
+
 function Weather() {
 
-    const [greeting, setGreeting] = useState("")
-    const [time, setTime] = useState([])
+    const [greeting, setGreeting] = useState(getGreeting)
+    const [time, setTime] = useState(getCurrentTime)
     const [city, setCity] = useState("")
     const [weatherData, setWeatherData] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -33,52 +50,17 @@ function Weather() {
     }
 
     useEffect(() => {
-        loadWeather(DEFAULT_CITY)
+        const request = setTimeout(() => loadWeather(DEFAULT_CITY), 0)
+        return () => clearTimeout(request)
     }, [])
 
 
     const updateTime = () => {
-        const now = new Date();
-        const hour = now.getHours();
-
-        if (hour >= 5 && hour < 12) {
-            setGreeting(
-                <>
-                    Good Morning <i className="fa-regular fa-sun"></i>
-                </>
-            );
-        } else if (hour >= 12 && hour < 16) {
-            setGreeting(
-                <>
-                    Good Afternoon <i className="fa-solid fa-sun"></i>
-                </>
-            );
-        } else if (hour >= 16 && hour < 21) {
-            setGreeting(
-                <>
-                    Good Evening <i className="fa-solid fa-cloud-sun"></i>
-                </>
-            );
-        } else {
-            setGreeting(
-                <>
-                    Good Night <i className="fa-solid fa-moon"></i>
-                </>
-            );
-        }
-
-        setTime(
-            now.toLocaleTimeString("en-IN", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit"
-            })
-        )
+        setGreeting(getGreeting())
+        setTime(getCurrentTime())
     }
 
     useEffect(() => {
-        updateTime()
-
         const interval = setInterval(() => {
             updateTime()
         }, 1000)
